@@ -168,7 +168,7 @@ class Canopsis_broker(BaseModule):
 
         except Exception, err:
             logger.error("[Canopsis] Error: there was an error while trying to create message for host")
-            logger.debug('[Canopsis] {0}: {1}'.format(err))
+            logger.debug('[Canopsis] Exception: {1}'.format(err))
             return
 
         if not message:
@@ -359,8 +359,11 @@ class event2amqp():
 
         try:
             # Try to establish a connection
-            self.connection._connection = self.connection.transport.establish_connection()
-            self.connection._closed = not self.connection.transport.verify_connection(self.connection._connection)
+            if self.connection._connection:
+                self.connection._closed = not self.connection.transport.verify_connection(self.connection._connection)
+
+            else:
+                return False
 
         except socket.error:
             # The socket is closed
@@ -433,20 +436,29 @@ class event2amqp():
                 self.producer.publish(body=message, compression=None, routing_key=key, exchange=self.exchange_name)
                 return True
             except:
-                logger.error("[Canopsis] Not connected, going to queue messages until connection back")
-                self.queue.append({"key": key, "message": message})
+                self.connection.release()
+
+                logger.error("[Canopsis] Impossible to publish message, adding it to queue (%s items in queue | max %s)" % (str(len(self.queue)), str(self.maxqueuelength)))
+
+                if len(self.queue) < int(self.maxqueuelength):
+                    self.queue.append({"key": key, "message": message})
+
                 func = sys._getframe(1).f_code.co_name
                 error = str(sys.exc_info()[0])
-                logger.error("[Canopsis] Unexpected error: %s in %s" % (error, func))
-                # logger.error(str(traceback.format_exc()))
+                logger.error("[Canopsis] Unexpected error: %s in %s" % (str(error), func))
+
                 return False
         else:
+            self.connection.release()
+
             errmsg = "[Canopsis] Not connected, going to queue messages until connection back (%s items in queue | max %s)" % (str(len(self.queue)), str(self.maxqueuelength))
             logger.error(errmsg)
+
             if len(self.queue) < int(self.maxqueuelength):
                 self.queue.append({"key": key, "message": message})
                 logger.debug("[Canopsis] Queue length: %d" % len(self.queue))
                 return True
+
             else:
                 logger.error("[Canopsis] Maximum retention for event queue %s reached" % str(self.maxqueuelength))
                 return False
