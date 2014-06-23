@@ -168,7 +168,7 @@ class Canopsis_broker(BaseModule):
 
         except Exception, err:
             logger.error("[Canopsis] Error: there was an error while trying to create message for host")
-            logger.debug('[Canopsis] Exception: {1}'.format(err))
+            logger.debug('[Canopsis] Exception: {0}'.format(err))
             return
 
         if not message:
