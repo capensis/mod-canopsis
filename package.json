@@ -2,9 +2,9 @@
   "name": "canopsis",
   "types": ["module"],
   "version": "1.4",
-  "homepage": "http://github.com/shinken-monitoring/mod-canopsis",
+  "homepage": "https://git.canopsis.net/canopsis-connectors/connector-shinken2canopsis.git",
   "author": "Jean Gabès",
-  "description": "Canospis hypervisor for event management. - Experimental",
+  "description": "Shinken module to connect to Canospis.",
   "contributors": [
     {
       "name": "Jean Gabès",
@@ -13,12 +13,17 @@
     {
       "name": "David Guénault",
       "email": "david.guenault@gmail.com"
+    },
+    {
+      "name": "Benjamin SANS",
+      "email": "bsans@capensis.fr"
     }
   ],
-  "repository": "https://github.com/shinken-monitoring/mod-canopsis",
+  "repository": "https://git.canopsis.net/canopsis-connectors/connector-shinken2canopsis.git",
   "keywords": [
     "module",
-    "broker"
+    "broker",
+    "canopsis"
   ],
   "dependencies": {
     "shinken": ">=1.4"
