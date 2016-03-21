@@ -261,10 +261,15 @@ class Canopsis_broker(BaseModule):
             specificmessage = {
                 'resource': b.data['service_description'],
                 'command_name': self.service_commands[b.data['host_name']][b.data['service_description']],
-                'max_attempts': self.service_max_check_attempts[b.data['host_name']][b.data['service_description']],
-                'notes_url': self.service_notes_url[b.data['host_name']][b.data['service_description']],
-                'action_url': self.service_action_url[b.data['host_name']][b.data['service_description']]
+                'max_attempts': self.service_max_check_attempts[b.data['host_name']][b.data['service_description']]
             }
+
+            if self.service_action_url[b.data['host_name']][b.data['service_description']]:
+                specificmessage['action_url'] = self.service_action_url[b.data['host_name']][b.data['service_description']]
+
+            if self.service_notes_url[b.data['host_name']][b.data['service_description']]:
+                specificmessage['notes_url'] = self.service_notes_url[b.data['host_name']][b.data['service_description']]
+
         elif source_type == 'component':
             # host
             specificmessage = {
