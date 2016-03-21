@@ -227,19 +227,9 @@ class Canopsis_broker(BaseModule):
                         'address'
         """
 
-        if source_type == 'resource':
-            commands = self.service_commands
-
-        elif source_type == 'component':
-            commands = self.host_commands
-
-        else:
-            logger.warning("[Canopsis] Invalid source_type %s" % (source_type))
-            return None
-
         # Check if we need to re-init the broker
-        reinit_needed = b.data['host_name'] not in commands
-        reinit_needed = reinit_needed or (source_type == 'resource' and b.data['service_description'] not in commands[b.data['host_name']])
+        reinit_needed = b.data['host_name'] not in self.service_commands
+        reinit_needed = reinit_needed or (source_type == 'resource' and b.data['service_description'] not in self.service_commands[b.data['host_name']])
 
         if reinit_needed:
             self.ask_reinit(b.data['instance_id'])
@@ -260,6 +250,9 @@ class Canopsis_broker(BaseModule):
                 'command_name': self.host_commands[b.data['host_name']],
                 'max_check_attempts': self.host_max_check_attempts[b.data['host_name']]
             }
+        else:
+            logger.warning("[Canopsis] Invalid source_type %s" % (source_type))
+            return None
 
         commonmessage = {
             'connector': u'shinken',
@@ -279,6 +272,12 @@ class Canopsis_broker(BaseModule):
             'latency': b.data['latency'],
             'address': self.host_addresses[b.data['host_name']]
         }
+
+        if 'notes_url' in b.data:
+            commonmessage['notes_url'] = b.data['notes_url']
+
+        if 'action_url' in b.data:
+            commonmessage['action_url'] = b.data['action_url']
 
         return dict(commonmessage, **specificmessage)
 
