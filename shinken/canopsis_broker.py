@@ -150,6 +150,14 @@ class Canopsis_broker(BaseModule):
             logger.debug("[Canopsis] creating empty dict in service_max_check_attempts")
             self.service_max_check_attempts = {}
 
+        if not hasattr(self, 'service_notes_url'):
+            logger.debug("[Canopsis] creating empty dict in service_notes_url")
+            self.service_notes_url = {}
+
+        if not hasattr(self, 'service_action_url'):
+            logger.debug("[Canopsis] creating empty dict in service_action_url")
+            self.service_action_url = {}
+
         if not b.data['host_name'] in self.service_commands:
             logger.debug("[Canopsis] creating empty dict for host %s service_commands" % b.data['host_name'])
             self.service_commands[b.data['host_name']] = {}
@@ -161,6 +169,18 @@ class Canopsis_broker(BaseModule):
             self.service_max_check_attempts[b.data['host_name']] = {}
 
         self.service_max_check_attempts[b.data['host_name']][b.data['service_description']] = b.data['max_check_attempts']
+
+        if not b.data['host_name'] in self.service_notes_url:
+            logger.debug("[Canopsis] creating empty dict for host %s service_notes_url" % b.data['host_name'])
+            self.service_notes_url[b.data['host_name']] = {}
+
+        self.service_notes_url[b.data['host_name']][b.data['service_description']] = b.data['notes_url']
+
+        if not b.data['host_name'] in self.service_action_url:
+            logger.debug("[Canopsis] creating empty dict for host %s service_action_url" % b.data['host_name'])
+            self.service_action_url[b.data['host_name']] = {}
+
+        self.service_action_url[b.data['host_name']][b.data['service_description']] = b.data['action_url']
 
     def manage_host_check_result_brok(self, b):
         try:
@@ -242,6 +262,8 @@ class Canopsis_broker(BaseModule):
                 'resource': b.data['service_description'],
                 'command_name': self.service_commands[b.data['host_name']][b.data['service_description']],
                 'max_attempts': self.service_max_check_attempts[b.data['host_name']][b.data['service_description']],
+                'notes_url': self.service_notes_url[b.data['host_name']][b.data['service_description']],
+                'action_url': self.service_action_url[b.data['host_name']][b.data['service_description']]
             }
         elif source_type == 'component':
             # host
@@ -272,12 +294,6 @@ class Canopsis_broker(BaseModule):
             'latency': b.data['latency'],
             'address': self.host_addresses[b.data['host_name']]
         }
-
-        if 'notes_url' in b.data:
-            commonmessage['notes_url'] = b.data['notes_url']
-
-        if 'action_url' in b.data:
-            commonmessage['action_url'] = b.data['action_url']
 
         return dict(commonmessage, **specificmessage)
 
