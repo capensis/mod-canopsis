@@ -116,9 +116,6 @@ class Canopsis_broker(BaseModule):
         elif b.type == "initial_service_status":
             self.manage_initial_service_status_brok(b)
         elif b.type == "initial_hostgroup_status":
-            file = open('/home/tgosselin/fichierdelog', 'a')
-            file.write('{0} | {1}\n'.format(b.type, b.data))
-            file.close()
             self.manage_initial_hostgroup_status_brok(b)
 
     def manage_initial_host_status_brok(self, b):
@@ -226,11 +223,6 @@ class Canopsis_broker(BaseModule):
                 self.hosts[host_name] = []
             if hostgroup_name not in self.hosts[host_name]:
                 self.hosts[host_name].append(hostgroup_name)
-        file = open('/home/tgosselin/fichierdelog', 'a')
-        file.write('{0}\n'.format(self.hosts))
-        file.close()
-
-
 
     def create_message(self, source_type, event_type, b):
         """
