@@ -92,6 +92,8 @@ class Canopsis_broker(BaseModule):
 
         self.last_need_data_send = time.time()
 
+        self.hosts = {}
+
     def ask_reinit(self, c_id):
         # Do not ask data too quickly, very dangerous
         # one a minute
@@ -113,6 +115,11 @@ class Canopsis_broker(BaseModule):
             self.manage_initial_host_status_brok(b)
         elif b.type == "initial_service_status":
             self.manage_initial_service_status_brok(b)
+        elif b.type == "initial_hostgroup_status":
+            file = open('/home/tgosselin/fichierdelog', 'a')
+            file.write('{0} | {1}\n'.format(b.type, b.data))
+            file.close()
+            self.manage_initial_hostgroup_status_brok(b)
 
     def manage_initial_host_status_brok(self, b):
         logger.info("[Canopsis] processing initial_host_status")
@@ -211,6 +218,20 @@ class Canopsis_broker(BaseModule):
         else:
             self.push2canopsis(message)
 
+    def manage_initial_hostgroup_status_brok(self, b):
+        hostgroup_name = b.data['hostgroup_name']
+
+        for _, host_name in b.data['members']:
+            if host_name not in self.hosts:
+                self.hosts[host_name] = []
+            if hostgroup_name not in self.hosts[host_name]:
+                self.hosts[host_name].append(hostgroup_name)
+        file = open('/home/tgosselin/fichierdelog', 'a')
+        file.write('{0}\n'.format(self.hosts))
+        file.close()
+
+
+
     def create_message(self, source_type, event_type, b):
         """
             event_type should be one of the following:
@@ -255,13 +276,14 @@ class Canopsis_broker(BaseModule):
             self.ask_reinit(b.data['instance_id'])
 
         # Build the message
-
+        hostgroups = self.hosts.get(b.data['host_name'], [])
         if source_type == 'resource':
             # service
             specificmessage = {
                 'resource': b.data['service_description'],
                 'command_name': self.service_commands[b.data['host_name']][b.data['service_description']],
-                'max_attempts': self.service_max_check_attempts[b.data['host_name']][b.data['service_description']]
+                'max_attempts': self.service_max_check_attempts[b.data['host_name']][b.data['service_description']],
+                'hostgroups': hostgroups,
             }
 
             if self.service_action_url[b.data['host_name']][b.data['service_description']]:
